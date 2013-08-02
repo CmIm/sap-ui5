@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+
+<html>
+<head>
+
+<!-- Added charset='utf-8' to handle data in various langauges -->
+<meta http-equiv='X-UA-Compatible' content='IE=edge' charset='utf-8' />
+
+<title>Weather Forecast</title>
+
+
+<!-- Load UI5, select gold reflection theme and the "commons" and "table" control libraries -->
+<script id='sap-ui-bootstrap' type='text/javascript'
+  src='resources/sap-ui-core.js' data-sap-ui-theme='sap_platinum'
+	data-sap-ui-libs='sap.ui.commons,sap.ui.table'></script>
+
+
+
+<script type="text/javascript">
+
+	// create a JSONModel, fill in the data and bind the Table to this model  
+	var oModel = new sap.ui.model.json.JSONModel();
+		
+		
+	// service url for Weather Underground JSON API   
+    var url = 'http://api.wunderground.com/api/Your_Key/conditions/forecast/q/autoip.json?callback=getJSON';
+
+    // var url = 'http://api.wunderground.com/api/Your_Key/conditions/forecast/lang:MR/q/autoip.json?callback=getJSON';  //Example URL
+    // var url = 'http://api.wunderground.com/api/Your_Key/forecast/conditions/lang:MR/q/France/Paris.json?callback=getJSON';   //Example URL
+
+	//Ajax Call with Callback function and JSONP data type  	
+	$
+			.ajax({
+				url : url,
+				jsonpCallback : 'getJSON',
+				contentType : "application/json",
+				dataType : 'jsonp',
+				success : function(data, textStatus, jqXHR) {
+
+					oModel.setData(data);
+					sap.ui.getCore().setModel(oModel);
+
+					// create matrix layout  
+					var oMatrix = new sap.ui.commons.layout.MatrixLayout({
+						id : 'matrix',
+						layoutFixed : false,
+						columns : 3,
+					});
+
+					var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+						colSpan : 3
+					});
+
+					var oTV = new sap.ui.commons.TextView(
+							{
+								id : 'TV-Head',
+								text : 'SAPUI5 Application based on Weather Underground JSON API',
+								design : sap.ui.commons.TextViewDesign.H1
+							});
+
+					oCell.addContent(oTV);
+					oMatrix.createRow(oCell);
+
+					//Create a standard divider  
+					var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+						colSpan : 3
+					});
+					oCell.addContent(new sap.ui.commons.HorizontalDivider());
+					oMatrix.createRow(oCell);
+
+					//Lable and TextField for City  
+					oLabelCity = new sap.ui.commons.Label({
+						id : 'L-City',
+						text : 'City'
+					});
+
+					oTFCity = new sap.ui.commons.TextField({
+						id : 'TF-City',
+						tooltip : 'City',
+						editable : false,
+						value : '{/current_observation/display_location/full}',
+						width : '200px'
+					});
+					oLabelCity.setLabelFor(oTFCity);
+					oMatrix.createRow(oLabelCity, oTFCity);
+
+					//Lable and TextField for Latitute  
+					oLabelLat = new sap.ui.commons.Label({
+						id : 'L-Lat',
+						text : 'Latitude'
+					});
+
+					oTFLat = new sap.ui.commons.TextField(
+							{
+								id : 'TF-Lat',
+								tooltip : 'Latitude',
+								editable : false,
+								value : '{/current_observation/display_location/latitude}',
+								width : '200px'
+							});
+					oLabelLat.setLabelFor(oTFLat);
+					oMatrix.createRow(oLabelLat, oTFLat);
+
+					//Lable and TextField for longitude  
+					oLabelLon = new sap.ui.commons.Label({
+						id : 'L-Lon',
+						text : 'Longitude'
+					});
+
+					oTFLon = new sap.ui.commons.TextField(
+							{
+								id : 'TF-Lon',
+								tooltip : 'Longitude',
+								editable : false,
+								value : '{/current_observation/display_location/longitude}',
+								width : '200px'
+							});
+					oLabelLon.setLabelFor(oTFLon);
+					oMatrix.createRow(oLabelLon, oTFLon);
+
+					//Lable and TextField for Elevation  
+					oLabelElev = new sap.ui.commons.Label({
+						id : 'L-Elev',
+						text : 'Elevation'
+					});
+
+					oTFElev = new sap.ui.commons.TextField(
+							{
+								id : 'TF-Elev',
+								tooltip : 'Elevation',
+								editable : false,
+								value : '{/current_observation/observation_location/elevation}',
+								width : '200px'
+							});
+					oLabelElev.setLabelFor(oTFElev);
+					oMatrix.createRow(oLabelElev, oTFElev);
+
+					//Create a standard divider  
+					var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+						colSpan : 3
+					});
+					oCell.addContent(new sap.ui.commons.HorizontalDivider());
+					oMatrix.createRow(oCell);
+
+					//Weather image  
+					var oImageWeather = new sap.ui.commons.Image({
+						src : '{/current_observation/icon_url}',
+						alt : '{/current_observation/icon}'
+					});
+
+					//Lable and TextField for weather  
+					oLabelWeather = new sap.ui.commons.Label({
+						id : 'L-Weather',
+						text : 'Weather'
+					});
+
+					oTFWeather = new sap.ui.commons.TextField({
+						id : 'TF-Weather',
+						tooltip : 'Weather',
+						editable : false,
+						value : '{/current_observation/weather}',
+						width : '200px'
+					});
+					oLabelWeather.setLabelFor(oTFWeather);
+					oMatrix.createRow(oLabelWeather, oTFWeather, oImageWeather);
+
+					//Create a standard divider  
+					var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+						colSpan : 3
+					});
+					oCell.addContent(new sap.ui.commons.HorizontalDivider());
+					oMatrix.createRow(oCell);
+
+					//Lable and TextField for temp_c  
+					oLabelTemp = new sap.ui.commons.Label({
+						id : 'L-Temp',
+						text : 'Temperature'
+					});
+
+					var tempstring = oModel
+							.getProperty("/current_observation/temp_c");
+
+					//Append Degree Celsius unit symbol to Temperature reading   
+					var tempinC = tempstring + "\u2103";
+
+					oTFTemp = new sap.ui.commons.TextField({
+						id : 'TF-Temp',
+						tooltip : 'Temperature',
+						editable : false,
+						value : tempinC,
+						width : '220px'
+					});
+					oLabelTemp.setLabelFor(oTFTemp);
+					oMatrix.createRow(oLabelTemp, oTFTemp);
+
+					//Lable and TextField for Obervation Time  
+					oLabelObsTime = new sap.ui.commons.Label({
+						id : 'L-ObsTime',
+						text : 'Observation Time'
+					});
+
+					oTFObsTime = new sap.ui.commons.TextField({
+						id : 'TF-ObsTime',
+						tooltip : 'Observation Time',
+						editable : false,
+						value : '{/current_observation/observation_time}',
+						width : '220px'
+					});
+					oLabelObsTime.setLabelFor(oTFObsTime);
+					oMatrix.createRow(oLabelObsTime, oTFObsTime);
+
+					//Lable and TextField for Local Time  
+					oLabelLclTime = new sap.ui.commons.Label({
+						id : 'L-LclTime',
+						text : 'Local Time'
+					});
+
+					oTFLclTime = new sap.ui.commons.TextField({
+						id : 'TF-LclTime',
+						tooltip : 'Local Time',
+						editable : false,
+						value : '{/current_observation/local_time_rfc822}',
+						width : '220px'
+					});
+					oLabelLclTime.setLabelFor(oTFLclTime);
+					oMatrix.createRow(oLabelLclTime, oTFLclTime);
+
+					//Lable and TextField for relative humidity  
+					oLabelRelHum = new sap.ui.commons.Label({
+						id : 'L-RelHum',
+						text : 'Relative Humidity'
+					});
+
+					oTFRelHum = new sap.ui.commons.TextField({
+						id : 'TF-RelHum',
+						tooltip : 'Relative Humidity',
+						editable : false,
+						value : '{/current_observation/relative_humidity}',
+						width : '220px'
+					});
+					oLabelRelHum.setLabelFor(oTFRelHum);
+					oMatrix.createRow(oLabelRelHum, oTFRelHum);
+
+					//Lable and TextField for Wind  
+					oLabelWind = new sap.ui.commons.Label({
+						id : 'L-Wind',
+						text : 'Wind'
+					});
+
+					oTFWind = new sap.ui.commons.TextField({
+						id : 'TF-Wind',
+						tooltip : 'Wind',
+						editable : false,
+						value : '{/current_observation/wind_string}',
+						width : '220px'
+					});
+					oLabelWind.setLabelFor(oTFWind);
+					oMatrix.createRow(oLabelWind, oTFWind);
+
+					//attach it to some element in the page  
+					oMatrix.placeAt('content');
+
+					//Create an instance of the table control  
+					var oTable1 = new sap.ui.table.Table({
+						title : "Simple Forecast Details",
+						visibleRowCount : 4,
+						selectionMode : sap.ui.table.SelectionMode.Single,
+						navigationMode : sap.ui.table.NavigationMode.Paginator,
+					});
+
+					//Define the columns and the control templates to be used  
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Period"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "date/weekday"),
+						width : "10px"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Image"
+						}),
+						template : new sap.ui.commons.Image().bindProperty(
+								"src", "icon_url"),
+						width : "10px",
+						hAlign : "Center"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "High"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "high/celsius"),
+						width : "10px"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Low"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "low/celsius"),
+						width : "10px"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Avarage Humidity"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "avehumidity"),
+						width : "10px"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Max Humidity"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "maxhumidity"),
+						width : "10px"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Min Humidity"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "minhumidity"),
+						width : "10px"
+					}));
+
+					oTable1.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Chance of Precipitation"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "pop"),
+						width : "10px"
+					}));
+
+					//Create a model and bind the table rows to this model  
+					var oModel2 = new sap.ui.model.json.JSONModel();
+
+					//Get he forecastday array from simpleforecast object  
+					var aSimpleForecast = oModel.getProperty("/forecast/simpleforecast/forecastday");
+
+					oModel2.setData({
+						modelData : aSimpleForecast
+					});
+
+					oTable1.setModel(oModel2);
+					oTable1.bindRows("/modelData");
+					oTable1.placeAt('content');
+
+					//Create an instance of the table control  
+					var oTable = new sap.ui.table.Table({
+						title : "Textual Forecast Details",
+						visibleRowCount : 8,
+						selectionMode : sap.ui.table.SelectionMode.Single,
+						navigationMode : sap.ui.table.NavigationMode.Paginator,
+					});
+
+					//Define the columns and the control templates to be used  
+					oTable.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Period"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "title"),
+						width : "50px"
+					}));
+
+					oTable.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Image"
+						}),
+						template : new sap.ui.commons.Image().bindProperty(
+								"src", "icon_url"),
+						width : "75px",
+						hAlign : "Center"
+					}));
+
+					oTable.addColumn(new sap.ui.table.Column({
+						label : new sap.ui.commons.Label({
+							text : "Forecast"
+						}),
+						template : new sap.ui.commons.TextView().bindProperty(
+								"text", "fcttext_metric"),
+						width : "300px"
+					}));
+
+					//Create a model and bind the table rows to this model  
+					var oModel1 = new sap.ui.model.json.JSONModel();
+
+					//Get the forecastday array table from txt_forecast object  
+					var aData = oModel.getProperty("/forecast/txt_forecast/forecastday");
+
+					oModel1.setData({
+						modelData : aData
+					});
+
+					oTable.setModel(oModel1);
+					oTable.bindRows("/modelData");
+					oTable.placeAt('content');
+				}
+			});
+</script>
+</head>
+
+<body class='sapUiBody'>
+	<div id='content'></div>
+	<p></p>
+	<div id="footer">
+		<div style="float: right; text-align: right;">
+			<img src="http://icons-ak.wxug.com/graphics/wu2/logo_130x80.png"
+				border="0" alt=""><br> <span style="padding-top: 20px;">Weather	data provided by Weather Underground, Inc.</span>
+		</div>
+	</div>
+</body>
+
+</html>
