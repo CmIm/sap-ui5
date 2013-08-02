@@ -1,0 +1,396 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+<meta http-equiv='X-UA-Compatible' content='IE=edge' charset='utf-8' />
+
+
+<title>Weather Forecast Using OpenWeatherMap API</title>
+
+
+
+<!-- Load UI5, select gold reflection theme and the "commons" and "table" control libraries -->
+
+<script id='sap-ui-bootstrap' type='text/javascript'
+  src='resources/sap-ui-core.js' data-sap-ui-theme='sap_platinum'
+	data-sap-ui-libs='sap.ui.commons,sap.ui.table'></script>
+
+<script>
+	//Create a matrix layout with 2 columns
+	var oMatrixHead = new sap.ui.commons.layout.MatrixLayout({
+		layoutFixed : true,
+		width : '300px',
+		columns : 2
+	});
+	oMatrixHead.setWidths('100px', '200px');
+
+	//Create a header
+	var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+		colSpan : 3
+	});
+	oCell.addContent(new sap.ui.commons.TextView({
+		text : 'SAPUI5 App based on Open Weather Map JSON Search API',
+		design : sap.ui.commons.TextViewDesign.H1
+	}));
+	oMatrixHead.createRow(oCell);
+
+	//Create Matrix layout
+	var oLabel = new sap.ui.commons.Label({
+		text : 'City'
+	});
+	var oInputQuery = new sap.ui.commons.TextField({
+		value : '',
+		width : '100%',
+		required : true
+	});
+	oLabel.setLabelFor(oInputQuery);
+	oMatrixHead.createRow(oLabel, oInputQuery);
+
+	//Create a standard divider
+	var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+		colSpan : 2
+	});
+	oCell.addContent(new sap.ui.commons.HorizontalDivider());
+	oMatrixHead.createRow(oCell);
+
+	// Attach the layout to the page
+	oMatrixHead.placeAt("content");
+
+	// create matrix layout
+	var oMatrix = new sap.ui.commons.layout.MatrixLayout({
+		id : 'matrix',
+		layoutFixed : false,
+		columns : 3,
+	});
+
+	// create a JSONModel, fill in the data and bind the Table to this model
+	var oModel = new sap.ui.model.json.JSONModel();
+
+	// create button
+	var oButtonSearch = new sap.ui.commons.Button(
+			{
+				text : "Search",
+				tooltip : "Search",
+				press : function() {
+
+					var qString = oInputQuery.getValue();
+
+					//Validation for Query String
+					if (qString == '') {
+						alert('City cannot be blank');
+						return false;
+					}
+
+					// service url for Open Weather Map JSON API 
+					var url = 'http://api.openweathermap.org/data/2.5/weather?q='
+							+ qString
+							+ '&mode=json&units=metric&callback=getJSON';
+
+					//Ajax Call with Callback function and JSONP data type
+					$
+							.ajax({
+								url : url,
+								jsonpCallback : 'getJSON',
+								contentType : "application/json",
+								dataType : 'jsonp',
+								success : function(data, textStatus, jqXHR) {
+
+									oModel.setData(data);
+									sap.ui.getCore().setModel(oModel);
+
+									oMatrix.setVisible(true);
+
+									//Lable and TextField for City
+									oLabelCity = new sap.ui.commons.Label({
+										id : 'L-City',
+										text : 'City'
+									});
+
+									oTFCity = new sap.ui.commons.TextField({
+										id : 'TF-City',
+										tooltip : 'City',
+										editable : false,
+										value : '{/name}',
+										width : '200px'
+									});
+									oLabelCity.setLabelFor(oTFCity);
+									oMatrix.createRow(oLabelCity, oTFCity);
+
+									//Lable and TextField for Country
+									oLabelCountry = new sap.ui.commons.Label({
+										id : 'L-Elev',
+										text : 'Country'
+									});
+
+									oTFCountry = new sap.ui.commons.TextField({
+										id : 'TF-Elev',
+										tooltip : 'Country',
+										editable : false,
+										value : '{/sys/country}',
+										width : '200px'
+									});
+									oLabelCountry.setLabelFor(oTFCountry);
+									oMatrix.createRow(oLabelCountry, oTFCountry);
+
+									//Lable and TextField for Latitute
+									oLabelLat = new sap.ui.commons.Label({
+										id : 'L-Lat',
+										text : 'Latitude'
+									});
+
+									oTFLat = new sap.ui.commons.TextField({
+										id : 'TF-Lat',
+										tooltip : 'Latitude',
+										editable : false,
+										value : '{/coord/lat}',
+										width : '200px'
+									});
+									oLabelLat.setLabelFor(oTFLat);
+									oMatrix.createRow(oLabelLat, oTFLat);
+
+									//Lable and TextField for longitude
+									oLabelLon = new sap.ui.commons.Label({
+										id : 'L-Lon',
+										text : 'Longitude'
+									});
+
+									oTFLon = new sap.ui.commons.TextField({
+										id : 'TF-Lon',
+										tooltip : 'Longitude',
+										editable : false,
+										value : '{/coord/lon}',
+										width : '200px'
+									});
+									oLabelLon.setLabelFor(oTFLon);
+									oMatrix.createRow(oLabelLon, oTFLon);
+
+									//Create a standard divider
+									var oCell = new sap.ui.commons.layout.MatrixLayoutCell(
+											{
+												colSpan : 3
+											});
+									oCell
+											.addContent(new sap.ui.commons.HorizontalDivider());
+									oMatrix.createRow(oCell);
+
+									var imageIcon = oModel
+											.getProperty("/weather/0/icon");
+
+									var imageIconsrc = 'http://openweathermap.org/img/w/'
+											+ imageIcon + '.png';
+
+									//Weather image
+									var oImageWeather = new sap.ui.commons.Image(
+											{
+												src : imageIconsrc,
+												alt : '{/weather/0/icon}'
+											});
+
+									//Lable and TextField for weather
+									oLabelWeather = new sap.ui.commons.Label({
+										id : 'L-Weather',
+										text : 'Weather'
+									});
+
+									oTFWeather = new sap.ui.commons.TextField({
+										id : 'TF-Weather',
+										tooltip : 'Weather',
+										editable : false,
+										value : '{/weather/0/description}',
+										width : '200px'
+									});
+									oLabelWeather.setLabelFor(oTFWeather);
+									oMatrix.createRow(oLabelWeather,
+											oTFWeather, oImageWeather);
+
+									//Create a standard divider
+									var oCell = new sap.ui.commons.layout.MatrixLayoutCell(
+											{
+												colSpan : 3
+											});
+									oCell
+											.addContent(new sap.ui.commons.HorizontalDivider());
+									oMatrix.createRow(oCell);
+
+									//Lable and TextField for temp_c
+									oLabelTemp = new sap.ui.commons.Label({
+										id : 'L-Temp',
+										text : 'Temperature'
+									});
+
+									var tempstring = oModel
+											.getProperty("/main/temp");
+
+									//Append Degree Celsius unit symbol to Temperature reading 
+									var tempinC = tempstring + "\u2103";
+
+									oTFTemp = new sap.ui.commons.TextField({
+										id : 'TF-Temp',
+										tooltip : 'Temperature',
+										editable : false,
+										value : tempinC,
+										width : '220px'
+									});
+									oLabelTemp.setLabelFor(oTFTemp);
+									oMatrix.createRow(oLabelTemp, oTFTemp);
+
+									var date = oModel.getProperty("/dt");
+
+									var dt = new Date(date * 1000);
+									var hr = dt.getHours();
+									if (hr < 10)
+										hr = '0' + hr;
+									var mn = dt.getMinutes();
+									if (mn < 10)
+										mn = '0' + mn;
+									var mon = dt.getMonth() + 1;
+									if (mon < 10)
+										mon = '0' + mon;
+									var day = dt.getDate();
+									if (day < 10)
+										day = '0' + day;
+									var year = dt.getFullYear();
+
+									var obs_time = year + '.' + mon + '.' + day
+											+ ' ' + hr + ':' + mn;
+
+									//Lable and TextField for Obervation Time
+									oLabelObsTime = new sap.ui.commons.Label({
+										id : 'L-ObsTime',
+										text : 'Observation Time'
+									});
+
+									oTFObsTime = new sap.ui.commons.TextField({
+										id : 'TF-ObsTime',
+										tooltip : 'Observation Time',
+										editable : false,
+										value : obs_time,
+										width : '220px'
+									});
+									oLabelObsTime.setLabelFor(oTFObsTime);
+									oMatrix
+											.createRow(oLabelObsTime,
+													oTFObsTime);
+
+									var sunrise = oModel
+											.getProperty("/sys/sunrise");
+
+									var dt_sr = new Date(sunrise * 1000);
+									var hr_sr = dt_sr.getHours();
+									if (hr_sr < 10)
+										hr_sr = '0' + hr_sr;
+									var mn_sr = dt_sr.getMinutes();
+									if (mn_sr < 10)
+										mn_sr = '0' + mn;
+
+									var sunrise_time = (hr_sr + ':' + mn_sr + ' AM');
+
+									//Lable and TextField for Sunrise
+									oLabelLclTime = new sap.ui.commons.Label({
+										id : 'L-LclTime',
+										text : 'Sunrise'
+									});
+
+									oTFLclTime = new sap.ui.commons.TextField({
+										id : 'TF-LclTime',
+										tooltip : 'Sunrise',
+										editable : false,
+										value : sunrise_time,
+										width : '220px'
+									});
+									oLabelLclTime.setLabelFor(oTFLclTime);
+									oMatrix
+											.createRow(oLabelLclTime,
+													oTFLclTime);
+
+									var sunset = oModel
+											.getProperty("/sys/sunset");
+
+									var dt = new Date(sunset * 1000);
+									var hr = dt.getHours();
+									if (hr < 10)
+										hr = '0' + hr;
+									var mn = dt.getMinutes();
+									if (mn < 10)
+										mn = '0' + mn;
+
+									var sunset_time = (hr + ':' + mn + ' PM');
+
+									//Lable and TextField for Sunset
+									oLabelSunsetTime = new sap.ui.commons.Label(
+											{
+												id : 'L-SunsetTime',
+												text : 'Sunset'
+											});
+
+									oTFSunsetTime = new sap.ui.commons.TextField(
+											{
+												id : 'TF-SunsetTime',
+												tooltip : 'Sunset',
+												editable : false,
+												value : sunset_time,
+												width : '220px'
+											});
+									oLabelSunsetTime.setLabelFor(oTFSunsetTime);
+									oMatrix.createRow(oLabelSunsetTime,
+											oTFSunsetTime);
+
+									//Lable and TextField for relative humidity
+									oLabelRelHum = new sap.ui.commons.Label({
+										id : 'L-RelHum',
+										text : 'Humidity'
+									});
+
+									oTFRelHum = new sap.ui.commons.TextField({
+										id : 'TF-RelHum',
+										tooltip : 'Humidity',
+										editable : false,
+										value : '{/main/humidity}',
+										width : '220px'
+									});
+									oLabelRelHum.setLabelFor(oTFRelHum);
+									oMatrix.createRow(oLabelRelHum, oTFRelHum);
+
+									//Lable and TextField for Wind
+									oLabelWind = new sap.ui.commons.Label({
+										id : 'L-Wind',
+										text : 'Wind'
+									});
+
+									oTFWind = new sap.ui.commons.TextField({
+										id : 'TF-Wind',
+										tooltip : 'Wind',
+										editable : false,
+										value : '{/wind/speed}',
+										width : '220px'
+									});
+									oLabelWind.setLabelFor(oTFWind);
+									oMatrix.createRow(oLabelWind, oTFWind);
+
+									//attach it to some element in the page
+									oMatrix.placeAt('content');
+
+								}
+
+							});
+
+				}
+			});
+
+	// attach it to some element in the page
+	oButtonSearch.placeAt("content");
+</script>
+
+
+
+</head>
+
+<body class='sapUiBody'>
+
+	<div id='content'></div>
+
+</body>
+
+</html>
