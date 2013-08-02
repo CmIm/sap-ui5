@@ -1,0 +1,210 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+<meta http-equiv='X-UA-Compatible' content='IE=edge' charset='utf-8' />
+
+
+<title>Wikipedia UI5 Application</title>
+
+
+
+<!-- Load UI5, select gold reflection theme and the "commons" and "table" control libraries -->
+
+<script id='sap-ui-bootstrap' type='text/javascript'
+  src='resources/sap-ui-core.js' data-sap-ui-theme= 'sap_platinum'  
+	data-sap-ui-libs='sap.ui.commons,sap.ui.table'></script>
+
+<script>
+	// create a JSONModel, fill in the data and bind the Table to this model
+	var oModel = new sap.ui.model.json.JSONModel();
+
+	//Create a matrix layout with 2 columns
+	var oMatrix = new sap.ui.commons.layout.MatrixLayout({
+		layoutFixed : true,
+		width : '300px',
+		columns : 2
+	});
+	oMatrix.setWidths('100px', '200px');
+
+	//Create a header
+	var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+		colSpan : 3
+	});
+	oCell.addContent(new sap.ui.commons.TextView({
+		text : 'SAPUI5 App based on Geonames Wikipedia JSON Search API',
+		design : sap.ui.commons.TextViewDesign.H1
+	}));
+	oMatrix.createRow(oCell);
+
+	//Create Matrix layout
+	var oLabel = new sap.ui.commons.Label({
+		text : 'Query String'
+	});
+	var oInputQuery = new sap.ui.commons.TextField({
+		value : '',
+		width : '100%',
+		required : true
+	});
+	oLabel.setLabelFor(oInputQuery);
+	oMatrix.createRow(oLabel, oInputQuery);
+
+	oLabel = new sap.ui.commons.Label({
+		text : 'Max Rows'
+	});
+	oInputMaxRow = new sap.ui.commons.TextField({
+		value : '',
+		width : '100%'
+	});
+	oLabel.setLabelFor(oInputMaxRow);
+	oMatrix.createRow(oLabel, oInputMaxRow);
+
+	//Create a standard divider
+	var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+		colSpan : 2
+	});
+	oCell.addContent(new sap.ui.commons.HorizontalDivider());
+	oMatrix.createRow(oCell);
+
+	// Attach the layout to the page
+	oMatrix.placeAt("content");
+
+	//Create an instance of the table control
+	var oTable = new sap.ui.table.Table({
+		title : "Wiki Details",
+		selectionMode : sap.ui.table.SelectionMode.Single,
+		navigationMode : sap.ui.table.NavigationMode.Paginator,
+	});
+
+	//Define the columns and the control templates to be used
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Title"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text", "title"),
+		width : "100px"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Image"
+		}),
+		template : new sap.ui.commons.Image().bindProperty("src",
+				"thumbnailImg"),
+		width : "75px",
+		hAlign : "Center"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Feature"
+		}),
+		template : new sap.ui.commons.TextView()
+				.bindProperty("text", "feature"),
+		width : "50px"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Summary"
+		}),
+		template : new sap.ui.commons.TextView()
+				.bindProperty("text", "summary"),
+		width : "300px"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Wiki URL"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"wikipediaUrl"),
+		width : "100px"
+	}));
+
+	// create button
+	var oButtonSearch = new sap.ui.commons.Button(
+			{
+				text : "Search",
+				tooltip : "Search",
+				press : function() {
+
+					var qString = oInputQuery.getValue();
+					
+					//Validation for Query String
+					if (qString == '') {
+						alert('Query string cannot be blank');
+						return false;
+					}
+					var maxRow = oInputMaxRow.getValue();
+					
+					//GeoNames WikipediaSearch JSON API service URL
+					var url = 'http://api.geonames.org/wikipediaSearchJSON?formatted=true&q='
+							+ qString
+							+ '&maxRows='
+							+ maxRow
+							+ '&username=<Your_User_Name>&style=full';
+					
+					//Ajax Call with callback function
+					$.ajax({
+	
+						url : url,
+						jsonpCallback : 'getJSON',
+						contentType : "application/json",
+						dataType : 'jsonp',
+						success : function(data, textStatus, jqXHR) {
+
+							oModel.setData(data);
+							sap.ui.getCore().setModel(oModel);
+
+							oTable.setVisible(true);
+
+							//Create a model and bind the table rows to this model
+							var oModel1 = new sap.ui.model.json.JSONModel();
+
+							var aData = oModel.getProperty("/geonames");
+
+							oModel1.setData({
+								modelData : aData
+							});
+
+							oTable.setModel(oModel1);
+							oTable.bindRows("/modelData");
+
+							oTable.placeAt('content');
+
+						}
+					});
+
+				}
+			});
+	// attach it to some element in the page
+	oButtonSearch.placeAt("content");
+
+	//Reset Button
+	oButtonReset = new sap.ui.commons.Button({
+		text : 'Reset',
+		press : function() {
+
+			oInputQuery.setValue('');
+			oInputMaxRow.setValue('');
+			oTable.setVisible(false);
+
+		}
+	});
+	oButtonReset.placeAt("content");
+</script>
+
+
+
+</head>
+
+<body class='sapUiBody'>
+
+	<div id='content'></div>
+
+</body>
+
+</html>
