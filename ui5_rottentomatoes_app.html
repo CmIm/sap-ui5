@@ -1,0 +1,368 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+
+<meta http-equiv='X-UA-Compatible' content='IE=edge' charset='utf-8' />
+
+
+<title>SAPUI5 Apps based on Rotten Tomatoes API</title>
+
+
+<!-- Load UI5, select gold reflection theme and the "commons" and "table" control libraries -->
+
+<script id='sap-ui-bootstrap' type='text/javascript'
+  src='resources/sap-ui-core.js' data-sap-ui-theme='sap_platinum'
+	data-sap-ui-libs='sap.ui.commons,sap.ui.table,sap.ui.ux3'></script>
+
+<script>
+	//Create a matrix layout with 2 columns
+	var oMatrix = new sap.ui.commons.layout.MatrixLayout({
+		layoutFixed : true,
+		width : '300px',
+		columns : 2
+	});
+	oMatrix.setWidths('100px', '200px');
+
+	//Create a header
+	var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+		colSpan : 3
+	});
+	oCell.addContent(new sap.ui.commons.TextView({
+		text : 'SAPUI5 Apps based on Rotten Tomatoes API',
+		design : sap.ui.commons.TextViewDesign.H1
+	}));
+	oMatrix.createRow(oCell);
+
+	var oLabel = new sap.ui.commons.Label({
+		text : 'Select Type'
+	});
+
+	// Create a ListBox
+	var oListBox1 = new sap.ui.commons.ListBox("RT", {
+		items : [ new sap.ui.core.ListItem("RT1", {
+			text : "box_office",
+			key : "movies",
+			additionalText : "Box Office Movies"
+		}), new sap.ui.core.ListItem("RT2", {
+			text : "in_theaters",
+			key : "movies",
+			additionalText : "In Theaters Movies"
+		}), new sap.ui.core.ListItem("RT3", {
+			text : "upcoming",
+			key : "movies",
+			additionalText : "Upcoming Movies"
+		}), new sap.ui.core.ListItem("RT4", {
+			text : "opening",
+			key : "movies",
+			additionalText : "Opening Movies"
+		}), new sap.ui.core.ListItem("RT5", {
+			text : "top_rentals",
+			key : "dvds",
+			additionalText : "Top Rentals DVDs"
+		}), new sap.ui.core.ListItem("RT6", {
+			text : "current_releases",
+			key : "dvds",
+			additionalText : "Current Releases DVDs"
+		}), new sap.ui.core.ListItem("RT7", {
+			text : "new_releases",
+			key : "dvds",
+			additionalText : "New Releases DVDs"
+		}), new sap.ui.core.ListItem("RT8", {
+			text : "upcoming",
+			key : "dvds",
+			additionalText : "Upcoming DVDs"
+		}) ]
+	});
+
+	// Create a DropdownBox
+	var oDropdownBox2 = new sap.ui.commons.DropdownBox("DropdownBox2", {
+		tooltip : "Select Type",
+		displaySecondaryValues : true,
+		"association:listBox" : oListBox1,
+		value : "box_office"
+	});
+
+	oLabel.setLabelFor(oDropdownBox2);
+	oMatrix.createRow(oLabel, oDropdownBox2);
+
+	oLabel = new sap.ui.commons.Label({
+		text : 'Number of Movies'
+	});
+	oInputMaxRow = new sap.ui.commons.TextField({
+		value : ''
+	});
+	oLabel.setLabelFor(oInputMaxRow);
+	oMatrix.createRow(oLabel, oInputMaxRow);
+
+	//Create a standard divider
+	var oCell = new sap.ui.commons.layout.MatrixLayoutCell({
+		colSpan : 2
+	});
+	oCell.addContent(new sap.ui.commons.HorizontalDivider());
+	oMatrix.createRow(oCell);
+
+	// Attach the layout to the page
+	oMatrix.placeAt("content");
+
+	//Create an instance of the table control - Main Table containing movie related details
+	var oTable = new sap.ui.table.Table({
+		//title : "Box Office Movie Details",
+		visibleRowCount : 5,
+		selectionMode : sap.ui.table.SelectionMode.Single,
+		navigationMode : sap.ui.table.NavigationMode.Paginator,
+	});
+
+	
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Title"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text", "title"),
+		sortProperty : "title",
+		filterProperty : "title"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Poster"
+		}),
+		template : new sap.ui.commons.Image().bindProperty("src",
+				"posters/profile"),
+		hAlign : "Center"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Rating"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"mpaa_rating"),
+		sortProperty : "mpaa_rating",
+		filterProperty : "mpaa_rating"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Runtime"
+		}),
+		template : new sap.ui.commons.TextView()
+				.bindProperty("text", "runtime"),
+		sortProperty : "runtime",
+		filterProperty : "runtime"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Release Date"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"release_dates/theater"),
+		sortProperty : "release_dates/theater",
+		filterProperty : "release_dates/theater"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Critics Rating"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"ratings/critics_rating"),
+		sortProperty : "ratings/critics_rating",
+		filterProperty : "ratings/critics_rating"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Audience Rating"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"ratings/audience_rating"),
+		sortProperty : "ratings/audience_rating",
+		filterProperty : "ratings/audience_rating"
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Critics Consensus"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"critics_consensus"),
+	}));
+
+	oTable.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Synopsis"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"synopsis"),
+	}));
+
+	
+	//Create an instance of the table control - Cast of the movie table
+	var oTableCast = new sap.ui.table.Table({
+		//title : "Cast of the Movie",
+		selectionMode : sap.ui.table.SelectionMode.Single,
+		navigationMode : sap.ui.table.NavigationMode.Paginator,
+	});
+
+	oTableCast.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Actor"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text", "name"),
+		width : "50px"
+	}));
+
+	oTableCast.addColumn(new sap.ui.table.Column({
+		label : new sap.ui.commons.Label({
+			text : "Character"
+		}),
+		template : new sap.ui.commons.TextView().bindProperty("text",
+				"characters"),
+		width : "50px"
+	}));
+
+	//Search Button
+	var oButtonResetSearch = new sap.ui.commons.Button({
+		text : "Search",
+		tooltip : "Search",
+		press : function() {
+
+			oTableCast.setVisible(false);
+			var ddKey = oDropdownBox2.getSelectedKey();
+			var ddValue = oDropdownBox2.getValue();
+			var maxRow = oInputMaxRow.getValue();
+
+			// Rotten Tomatoes API's JSON service url  
+			var url = 'http://api.rottentomatoes.com/api/public/v1.0/lists/'
+					+ ddKey + '/' + ddValue
+					+ '.json?apikey=<Your_API_Key>&limit=' + maxRow
+					+ '&callback=getJSON';
+
+			//Ajax Call
+			$.ajax({
+				url : url,
+				jsonpCallback : 'getJSON',
+				contentType : "application/json",
+				dataType : 'jsonp',
+				success : function(data, textStatus, jqXHR) {
+
+					var oModel = new sap.ui.model.json.JSONModel();
+
+					oModel.setData(data);  
+					sap.ui.getCore().setModel(oModel);
+
+					//Create a model and bind the table rows to this model
+					var oModel1 = new sap.ui.model.json.JSONModel();
+
+					var aData = oModel.getProperty("/movies");
+
+					oModel1.setData({
+						movies : aData
+					});
+
+					oTable.setVisible(true);
+					oTable.setModel(oModel1);
+					oTable.bindRows("/movies");
+
+					if (ddKey == 'movies') {
+
+						if (ddValue == 'box_office') {
+							var movieType = 'Box Office';
+						} else if (ddValue == 'in_theaters') {
+							var movieType = 'In Theaters';
+						} else if (ddValue == 'opening') {
+							var movieType = 'Opening';
+						} else if (ddValue == 'upcoming') {
+							var movieType = 'Upcoming';
+						}
+
+						var movieTitle = movieType + ' Movies';
+						oTable.setTitle(movieTitle);
+
+					} else if (ddKey == 'dvds') {
+
+						if (ddValue == 'top_rentals') {
+							var movieType = 'Top Rentals';
+						} else if (ddValue == 'current_releases') {
+							var movieType = 'Current Releases';
+						} else if (ddValue == 'new_releases') {
+							var movieType = 'New Releases';
+						} else if (ddValue == 'upcoming') {
+							var movieType = 'Upcoming';
+						}
+
+						var movieTitle = movieType + ' DVDs';
+						oTable.setTitle(movieTitle);
+
+					}
+
+					oTable.placeAt('content');
+
+					//Get the row selected
+					oTable.attachRowSelectionChange(function(oEvent) {
+						var currentRowContext = oEvent
+								.getParameter("rowContext");
+
+						//Create a model and bind the table rows to this model
+						var oModel2 = new sap.ui.model.json.JSONModel();
+
+						var castPath = currentRowContext + "/abridged_cast";
+
+						//Get the abridged_cast array of selected row
+						var aMovieCast = oModel.getProperty(castPath);
+
+						oModel2.setData({
+							modelData : aMovieCast
+						});
+
+						oTableCast.setVisible(true);
+						oTableCast.setModel(oModel2);
+						oTableCast.bindRows("/modelData");
+
+						var movieNamePath = currentRowContext + "/title";
+
+						var movieName = oModel.getProperty(movieNamePath);
+						var movieTitle = 'Cast of the Movie: ' + movieName;
+
+						oTableCast.setTitle(movieTitle);
+
+						oTableCast.placeAt('content');
+
+					});
+
+				}
+			});
+
+		}
+
+	});
+	oButtonResetSearch.placeAt("content");
+
+	//Reset Button. Reset values to earlier stage
+	oButtonReset = new sap.ui.commons.Button({
+		text : 'Reset',
+		press : function() {
+
+			oTable.setVisible(false);
+			oTableCast.setVisible(false);
+			oInputMaxRow.setValue('');
+			oDropdownBox2.setValue('box_office');
+		}
+	});
+	oButtonReset.placeAt("content");
+</script>
+
+
+
+</head>
+
+<body class='sapUiBody'>
+
+	<div id='content'></div>
+
+</body>
+
+</html>
